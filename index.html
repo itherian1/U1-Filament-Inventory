@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filament Inventory</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* CSS VARIABLES FOR LIGHT/DARK MODE */
+        :root {
+            --bg-color: #f4f4f5;
+            --text-color: #18181b;
+            --card-bg: white;
+            --border-color: #d4d4d8;
+            --input-bg: white;
+            --muted-text: #52525b;
+            --btn-hover: #e4e4e7;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e4e4e7;
+            --card-bg: #1e1e1e;
+            --border-color: #3f3f46;
+            --input-bg: #27272a;
+            --muted-text: #a1a1aa;
+            --btn-hover: #3f3f46;
+            --shadow: rgba(0,0,0,0.5);
+        }
+
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); max-width: 950px; margin: 2rem auto; padding: 0 1rem; transition: background-color 0.3s, color 0.3s; }
+        
+        /* HEADER SECTION */
+        .header-wrapper { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        .header-wrapper h1 { margin: 0; border: none; padding: 0; }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+        
+        .header-icon-btn { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 1.5rem; cursor: pointer; transition: all 0.2s; color: var(--text-color); display: flex; align-items: center; justify-content: center; width: auto; }
+        .header-icon-btn:hover { background: var(--btn-hover); border-color: var(--border-color); }
+        
+        /* NAVIGATION BAR */
+        .navbar { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; background: var(--card-bg); padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px var(--shadow); align-items: center; }
+        
+        .nav-btn { width: auto; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; color: var(--text-color); transition: all 0.2s; }
+        .nav-btn:hover { background: var(--btn-hover); }
+        .nav-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
+        .nav-btn.add-btn-nav { background: #10b981; color: white; border-color: #059669; }
+        .nav-btn.add-btn-nav:hover { background: #059669; }
+
+        /* VIEW TOGGLING */
+        .view-section { display: none; }
+        .view-section.active-view { display: block; }
+
+        /* TOOLBAR */
+        .toolbar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: var(--card-bg); padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px var(--shadow); }
+        .search-box, .sort-box { flex-grow: 1; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 1rem; background: var(--input-bg); color: var(--text-color); }
+
+        /* CARDS & FORMS */
+        .card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px var(--shadow); margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, button { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; box-sizing: border-box; width: 100%; background: var(--input-bg); color: var(--text-color); }
+        
+        .full-width { grid-column: 1 / -1; }
+        .flex-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+        .url-input-wrapper { flex-grow: 1; min-width: 200px; }
+        .add-spool-btn { background-color: #3b82f6; color: white; border: none; cursor: pointer; font-weight: bold; padding: 0.6rem 1.5rem; white-space: nowrap; width: auto; }
+        
+        /* INVENTORY LIST */
+        .material-header { margin-top: 1.5rem; margin-bottom: 1rem; color: var(--text-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; font-size: 1.5rem; }
+        .empty-state { text-align: center; color: var(--muted-text); padding: 3rem; font-style: italic; background: var(--card-bg); border-radius: 8px; border: 1px dashed var(--border-color); }
+        
+        .spool-item { 
+            background: var(--card-bg); padding: 1.2rem; border-radius: 8px; border-left: 6px solid #3b82f6; 
+            box-shadow: 0 2px 4px var(--shadow); margin-bottom: 1rem;
+            display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.5rem; 
+        }
+        .spool-item.low-stock { border-left-color: #ef4444; }
+        
+        .spool-info h3 { margin: 0 0 0.4rem 0; font-size: 1.2rem; }
+        .spool-info a { color: var(--text-color); text-decoration: none; }
+        .spool-info a:hover { color: #3b82f6; text-decoration: underline; }
+        .spool-info p { margin: 0; color: var(--muted-text); font-size: 0.95rem; line-height: 1.4; }
+        .spool-notes { font-size: 0.85rem !important; color: #10b981 !important; font-style: italic; margin-top: 0.4rem !important; }
+        .spool-cost { font-size: 0.85rem !important; color: #f59e0b !important; font-weight: bold; }
+        
+        .bar-bg { width: 100%; max-width: 350px; background-color: var(--border-color); height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; background-color: #3b82f6; transition: width 0.3s; }
+        .low-stock .bar-fill { background-color: #ef4444; }
+
+        /* ACTION BUTTON GRID */
+        .actions-col { display: flex; flex-direction: column; gap: 0.5rem; width: 240px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+        .action-row { display: flex; gap: 0.3rem; align-items: center; }
+        
+        button { cursor: pointer; font-weight: 600; border: none; }
+        .quick-btn { background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 0.5rem; font-size: 0.9rem;}
+        
+        .edit-btn { background-color: #52525b; color: white; padding: 0.5rem 0.2rem; font-size: 0.85rem; }
+        .qr-btn { background-color: #3f3f46; color: white; padding: 0.5rem 0.2rem; font-size: 0.85rem; }
+        .delete-btn { background-color: #ef4444; color: white; padding: 0.5rem 0.2rem; font-size: 0.85rem; }
+        
+        .drop-btn { background-color: #3f3f46; color: white; flex: 1; padding: 0.5rem;}
+        .add-btn { background-color: #10b981; color: white; flex: 1; padding: 0.5rem;}
+
+        /* MODAL STYLES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 2rem; border-radius: 8px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+        .cancel-btn { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); width: auto; padding: 0.6rem 1.5rem; }
+        .save-edit-btn { background: #3b82f6; color: white; width: auto; padding: 0.6rem 1.5rem; }
+
+        /* QR PRINT LABEL STYLES */
+        #qr-print-area { text-align: center; }
+        #qr-code-container { margin: 1.5rem auto; display: flex; justify-content: center; background: white; padding: 1rem; border-radius: 8px; width: max-content; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #qrModal, #qrModal * { visibility: visible; }
+            #qrModal { position: absolute; left: 0; top: 0; background: white; color: black; box-shadow: none; width: 100%; }
+            .modal-overlay { background: transparent; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-wrapper">
+        <h1>Filament Inventory</h1>
+        <div class="header-actions">
+            <button class="header-icon-btn" id="nav-reorder" onclick="switchView('reorder')" title="Reorder Dashboard">🛒</button>
+            <button class="header-icon-btn" id="nav-data" onclick="switchView('data')" title="Data Backup & Restore">💾</button>
+            <button class="header-icon-btn" onclick="toggleTheme()" id="themeIcon" title="Toggle Dark Mode">🌙</button>
+        </div>
+    </div>
+
+    <nav class="navbar" id="dynamicNav">
+        <button class="nav-btn add-btn-nav" id="nav-add" onclick="switchView('add')">+ Add Spool</button>
+        <button class="nav-btn active" id="nav-all" onclick="switchView('inventory', 'All')">All Inventory</button>
+    </nav>
+
+    <div id="addView" class="view-section card">
+        <h3>Add New Spool</h3>
+        <div class="form-grid">
+            <div class="input-group"><label>Brand</label><input type="text" id="brand" placeholder="e.g. Hatchbox"></div>
+            <div class="input-group">
+                <label>Material</label>
+                <select id="material">
+                    <option value="PLA">PLA</option><option value="PLA-CF">PLA-CF</option><option value="PLA Silk">PLA Silk</option>
+                    <option value="PETG">PETG</option><option value="PETG-CF">PETG-CF</option><option value="ABS">ABS</option>
+                    <option value="ASA">ASA</option><option value="TPU">TPU</option><option value="PC">PC</option>
+                    <option value="Nylon (PA)">Nylon (PA)</option><option value="PA-CF">PA-CF</option>
+                    <option value="Wood">Wood</option>
+                    <option value="PVA">PVA (Support)</option>
+                    <option value="HIPS">HIPS (Support)</option>
+                    <option value="Support (Other)">Support (Other)</option>
+                </select>
+            </div>
+            <div class="input-group"><label>Color</label><input type="text" id="color" placeholder="e.g. Matte Black"></div>
+            <div class="input-group">
+                <label>Location</label>
+				<select id="location">
+                    <option value="Snapmaker U1 - Slot 1">Snapmaker U1 1</option>
+                    <option value="Snapmaker U1 - Slot 2">Snapmaker U1 2</option>
+                    <option value="Snapmaker U1 - Slot 3">Snapmaker U1 3</option>
+                    <option value="Snapmaker U1 - Slot 4">Snapmaker U1 4</option>
+                    <option value="Storage Shelf 1">Storage Shelf 1</option>
+                    <option value="Storage Shelf 2">Storage Shelf 2</option>
+                    <option value="Dry Box">Dry Box</option>
+                    <option value="AMS">AMS</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Spool Size (Max)</label>
+                <select id="capacity"><option value="1000">1000g</option><option value="800">800g</option><option value="500">500g</option><option value="250">250g</option></select>
+            </div>
+            <div class="input-group"><label>Current Weight</label><input type="number" id="weight" value="1000"></div>
+            <div class="input-group"><label>Price ($) (Optional)</label><input type="number" id="price" step="0.01" placeholder="e.g. 19.99"></div>
+            
+            <div class="input-group full-width"><label>Print Profile Notes (Optional)</label><input type="text" id="notes" placeholder="e.g., Prints best at 265°C..."></div>
+            <div class="full-width flex-row" style="margin-top: 0.5rem;">
+                <div class="input-group url-input-wrapper"><label>Reorder Link (Optional)</label><input type="url" id="spoolUrl" placeholder="https://amazon.com/..."></div>
+                <button class="add-spool-btn" onclick="addSpool()">Save to Inventory</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reorderView" class="view-section">
+        <h2 class="material-header" style="color: #ef4444; border-bottom: none;">🛒 Shopping Cart (≤ 200g)</h2>
+        <p style="color: var(--muted-text); margin-bottom: 1.5rem;">These spools are running critically low. Click their names to instantly reorder.</p>
+        <div id="reorderList"></div>
+    </div>
+
+    <div id="dataView" class="view-section card">
+        <h3>💾 Data Backup & Restore</h3>
+        <p style="color: var(--muted-text); margin-bottom: 1.5rem;">Export your data to a file, or use the Snapshot system to undo mistakes.</p>
+        
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color);">
+            <button class="add-btn" style="width: auto; padding: 0.8rem 1.5rem;" onclick="exportData()">⬇️ Export to PC (JSON)</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            <button class="drop-btn" style="width: auto; padding: 0.8rem 1.5rem;" onclick="document.getElementById('importFile').click()">⬆️ Import from PC (JSON)</button>
+        </div>
+
+        <h4 style="margin: 0 0 1rem 0;">Local Time Machine</h4>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="edit-btn" style="width: auto; padding: 0.8rem 1.5rem;" onclick="createSnapshot(true)">📸 Create Snapshot Now</button>
+            <button class="delete-btn" style="width: auto; padding: 0.8rem 1.5rem;" onclick="restoreSnapshot()">⏪ Restore Previous Snapshot</button>
+        </div>
+        <p id="snapshot-status" style="font-size: 0.85rem; color: #10b981; margin-top: 0.5rem; display: none;">Snapshot saved successfully!</p>
+    </div>
+
+    <div id="inventoryView" class="view-section active-view">
+        <div class="toolbar">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search brand, color, notes, location..." onkeyup="renderSpools()">
+            <select id="sortSelect" class="sort-box" onchange="renderSpools()">
+                <option value="material">Sort by: Material Group (Default)</option>
+                <option value="lowest">Sort by: Lowest Remaining</option>
+                <option value="az">Sort by: Brand A-Z</option>
+                <option value="location">Sort by: Location</option>
+                <option value="recent">Sort by: Recently Added</option>
+            </select>
+        </div>
+        <div id="spoolList"></div>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Edit Spool Details</h3>
+            <input type="hidden" id="edit-id">
+            <div class="form-grid">
+                <div class="input-group"><label>Brand</label><input type="text" id="edit-brand"></div>
+                <div class="input-group">
+                    <label>Material</label>
+                    <select id="edit-material">
+                        <option value="PLA">PLA</option><option value="PLA-CF">PLA-CF</option><option value="PLA Silk">PLA Silk</option>
+                        <option value="PETG">PETG</option><option value="PETG-CF">PETG-CF</option><option value="ABS">ABS</option>
+                        <option value="ASA">ASA</option><option value="TPU">TPU</option><option value="PC">PC</option>
+                        <option value="Nylon (PA)">Nylon (PA)</option><option value="PA-CF">PA-CF</option><option value="Wood">Wood</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>Color</label><input type="text" id="edit-color"></div>
+                <div class="input-group">
+                    <label>Location</label>
+				<select id="edit-location">
+                    <option value="Snapmaker U1 - Slot 1">Snapmaker U1 1</option>
+                    <option value="Snapmaker U1 - Slot 2">Snapmaker U1 2</option>
+                    <option value="Snapmaker U1 - Slot 3">Snapmaker U1 3</option>
+                    <option value="Snapmaker U1 - Slot 4">Snapmaker U1 4</option>
+                    <option value="Storage Shelf 1">Storage Shelf 1</option>
+                    <option value="Storage Shelf 2">Storage Shelf 2</option>
+                    <option value="Dry Box">Dry Box</option>
+                    <option value="AMS">AMS</option>
+                </select>
+                </div>
+                <div class="input-group">
+                    <label>Spool Size (Max)</label>
+                    <select id="edit-capacity"><option value="1000">1000g</option><option value="800">800g</option><option value="500">500g</option><option value="250">250g</option></select>
+                </div>
+                <div class="input-group"><label>Current Weight</label><input type="number" id="edit-weight"></div>
+                <div class="input-group"><label>Purchase Price ($)</label><input type="number" id="edit-price" step="0.01"></div>
+                <div class="input-group full-width"><label>Print Profile Notes</label><input type="text" id="edit-notes"></div>
+                <div class="input-group full-width"><label>Reorder Link</label><input type="url" id="edit-spoolUrl"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="save-edit-btn" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div id="qr-print-area">
+                <h3 id="qr-title" style="margin: 0; color: black;"></h3>
+                <p id="qr-subtitle" style="margin: 0; color: #555; font-size: 0.9rem; margin-bottom: 0.5rem;"></p>
+                <div id="qr-code-container"></div>
+                <p style="margin: 0; font-size: 0.75rem; color: #999;">ID: <span id="qr-id"></span></p>
+            </div>
+            <div class="modal-actions no-print" style="justify-content: center;">
+                <button class="cancel-btn" onclick="closeQRModal()">Close</button>
+                <button class="save-edit-btn" onclick="window.print()">🖨️ Print Label</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- THEME LOGIC ---
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeIcon').innerText = '☀️';
+        }
+
+        let spools = [];
+        let currentFilter = 'All';
+
+        // --- NAVIGATION LOGIC ---
+        function switchView(viewName, filter = 'All') {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.nav-btn, .header-icon-btn').forEach(btn => btn.classList.remove('active'));
+
+            if (viewName === 'add') {
+                document.getElementById('addView').classList.add('active-view');
+                document.getElementById('nav-add').classList.add('active');
+            } else if (viewName === 'data') {
+                document.getElementById('dataView').classList.add('active-view');
+                document.getElementById('nav-data').classList.add('active');
+            } else if (viewName === 'reorder') {
+                document.getElementById('reorderView').classList.add('active-view');
+                document.getElementById('nav-reorder').classList.add('active');
+                renderReorderDashboard();
+            } else if (viewName === 'inventory') {
+                document.getElementById('inventoryView').classList.add('active-view');
+                currentFilter = filter;
+                renderSpools();
+            }
+        }
+
+        function updateNavButtons() {
+            const nav = document.getElementById('dynamicNav');
+            document.querySelectorAll('.dynamic-mat-btn').forEach(e => e.remove());
+
+            const materials = [...new Set(spools.map(s => s.material))].sort();
+            materials.forEach(mat => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn dynamic-mat-btn ${currentFilter === mat && document.getElementById('inventoryView').classList.contains('active-view') ? 'active' : ''}`;
+                btn.innerText = mat;
+                btn.onclick = () => switchView('inventory', mat);
+                nav.appendChild(btn); 
+            });
+            if(currentFilter === 'All' && document.getElementById('inventoryView').classList.contains('active-view')) {
+                document.getElementById('nav-all').classList.add('active');
+            }
+        }
+
+        // --- MOONRAKER DATABASE INTEGRATION ---
+        
+		async function loadInventory() {
+            try {
+                const response = await fetch('/server/database/item?namespace=fluidd&key=custom_filament_spools');
+                if (response.ok) {
+                    const data = await response.json();
+                    spools = data.result.value || []; 
+                } else {
+                    console.log("No database found yet. Starting fresh.");
+                    spools = [];
+                }
+                renderSpools(); 
+            } catch (e) {
+                console.error("Failed to connect to Moonraker:", e);
+                
+                // VISUAL ERROR HANDLER: 
+                // Replaces the blank screen with a helpful error message if Klipper is offline
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 10vh; padding: 2rem; font-family: system-ui, sans-serif;">
+                        <h1 style="color: #ef4444; font-size: 3rem; margin-bottom: 0;">🚨</h1>
+                        <h2 style="color: var(--text-color, #18181b);">Cannot Connect to Klipper</h2>
+                        <p style="color: var(--muted-text, #52525b); max-width: 500px; margin: 1rem auto; line-height: 1.5;">
+                            The Filament Tracker could not communicate with the Moonraker database. 
+                            This usually happens if Klipper has crashed due to a <b>printer.cfg</b> error and is currently in a "Not Ready" state.
+                        </p>
+                        <div style="background: var(--card-bg, #f4f4f5); padding: 1rem; border-radius: 8px; display: inline-block; border: 1px solid #ef4444;">
+                            <strong>Next Step:</strong> Check the main Fluidd dashboard to clear the Klipper error.
+                        </div>
+                    </div>`;
+            }
+        }
+
+        async function saveAndRender() {
+            try {
+                const apiKey = localStorage.getItem('fluidd_api_key') || '';
+                
+                const response = await fetch('/server/database/item', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey 
+                    },
+                    body: JSON.stringify({
+                        namespace: "fluidd",
+                        key: "custom_filament_spools",
+                        value: spools
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    alert(`🚨 Moonraker rejected save! Status: ${response.status}\nCheck console for details.`);
+                    console.error("Moonraker Error:", errorText);
+                    return;
+                }
+                
+                console.log("Save successful!");
+                if(document.getElementById('inventoryView').classList.contains('active-view')) renderSpools();
+                if(document.getElementById('reorderView').classList.contains('active-view')) renderReorderDashboard();
+            } catch (e) {
+                alert(`🚨 Network Error attempting to save: ${e.message}`);
+            }
+        }
+
+        async function createSnapshot(showMsg = false) {
+            try {
+                const apiKey = localStorage.getItem('fluidd_api_key') || '';
+                await fetch('/server/database/item', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey
+                    },
+                    body: JSON.stringify({ namespace: "fluidd", key: "custom_spools_snapshot", value: spools })
+                });
+                if(showMsg) {
+                    const msg = document.getElementById('snapshot-status');
+                    msg.style.display = 'block';
+                    setTimeout(() => msg.style.display = 'none', 3000);
+                }
+            } catch (e) {
+                console.error("Failed to save snapshot to Moonraker.");
+            }
+        }
+
+        async function restoreSnapshot() {
+            if (confirm("Restore snapshot? This replaces your current inventory.")) {
+                try {
+                    const response = await fetch('/server/database/item?namespace=fluidd&key=custom_spools_snapshot');
+                    if (response.ok) {
+                        const data = await response.json();
+                        spools = data.result.value || [];
+                        saveAndRender(); 
+                        alert("Restored successfully!");
+                    } else {
+                        alert("No snapshot found on the server.");
+                    }
+                } catch (e) {
+                    alert("Failed to connect to Moonraker to restore snapshot.");
+                }
+            }
+        }
+
+        // --- CORE INVENTORY ACTIONS ---
+        function addSpool() {
+            const brand = document.getElementById('brand').value.trim();
+            const material = document.getElementById('material').value;
+            const color = document.getElementById('color').value.trim();
+            const location = document.getElementById('location').value;
+            const capacity = parseInt(document.getElementById('capacity').value);
+            const currentWeight = parseInt(document.getElementById('weight').value);
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const notes = document.getElementById('notes').value.trim();
+            const url = document.getElementById('spoolUrl').value.trim();
+
+            if (!brand || !color || isNaN(capacity) || isNaN(currentWeight)) return alert("Please fill required fields.");
+
+		// Use the scanned RFID if available, otherwise generate a standard timestamp ID
+        const finalId = pendingNfcUid ? pendingNfcUid : Date.now();
+
+        spools.push({ 
+            id: finalId, 
+            brand, material, color, location, 
+            weight: currentWeight, maxWeight: capacity, 
+            price, notes, url 
+        });
+        
+        // Clear the pending tag and reset the placeholder after saving
+        pendingNfcUid = null;
+        document.getElementById('brand').placeholder = "e.g. Hatchbox";
+            
+            document.getElementById('brand').value = ''; document.getElementById('color').value = '';
+            document.getElementById('notes').value = ''; document.getElementById('spoolUrl').value = '';
+            document.getElementById('price').value = ''; document.getElementById('weight').value = '1000';
+            
+            saveAndRender();
+            switchView('inventory', material);
+        }
+
+        function quickDeduct(id, amount) {
+            const spool = spools.find(s => s.id === id);
+            if (spool) { spool.weight = Math.max(0, spool.weight - amount); saveAndRender(); }
+        }
+
+        function customAdjust(id, actionType) {
+            const input = document.getElementById(`custom-${id}`);
+            const amount = parseInt(input.value);
+            const spool = spools.find(s => s.id === id);
+            if (!spool || isNaN(amount)) return;
+            if (actionType === 'drop') spool.weight = Math.max(0, spool.weight - amount);
+            else { spool.weight += amount; if (spool.weight > spool.maxWeight) spool.maxWeight = spool.weight; }
+            input.value = ''; saveAndRender();
+        }
+
+        function deleteSpool(id) {
+            if (confirm("Delete this spool? (A snapshot will be created)")) { 
+                createSnapshot(); spools = spools.filter(s => s.id !== id); 
+                if (spools.filter(s => s.material === currentFilter).length === 0) currentFilter = 'All';
+                saveAndRender(); 
+            }
+        }
+
+        // --- EDIT MODAL LOGIC ---
+        function openEditModal(id) {
+            const spool = spools.find(s => s.id === id);
+            if (!spool) return;
+            document.getElementById('edit-id').value = spool.id;
+            document.getElementById('edit-brand').value = spool.brand;
+            document.getElementById('edit-material').value = spool.material;
+            document.getElementById('edit-color').value = spool.color;
+            document.getElementById('edit-location').value = spool.location || 'Unknown';
+            document.getElementById('edit-capacity').value = spool.maxWeight || 1000;
+            document.getElementById('edit-weight').value = spool.weight;
+            document.getElementById('edit-price').value = spool.price || '';
+            document.getElementById('edit-notes').value = spool.notes || '';
+            document.getElementById('edit-spoolUrl').value = spool.url || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+        
+        function saveEdit() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const spool = spools.find(s => s.id === id);
+            if (spool) {
+                spool.brand = document.getElementById('edit-brand').value.trim();
+                spool.material = document.getElementById('edit-material').value;
+                spool.color = document.getElementById('edit-color').value.trim();
+                spool.location = document.getElementById('edit-location').value;
+                spool.maxWeight = parseInt(document.getElementById('edit-capacity').value);
+                spool.weight = parseInt(document.getElementById('edit-weight').value);
+                spool.price = parseFloat(document.getElementById('edit-price').value) || 0;
+                spool.notes = document.getElementById('edit-notes').value.trim();
+                spool.url = document.getElementById('edit-spoolUrl').value.trim();
+                saveAndRender(); closeEditModal();
+            }
+        }
+
+        // --- QR MODAL LOGIC ---
+        function openQRModal(id) {
+            const spool = spools.find(s => s.id === id);
+            if (!spool) return;
+            document.getElementById('qr-title').innerText = `${spool.brand} ${spool.material}`;
+            document.getElementById('qr-subtitle').innerText = spool.color;
+            document.getElementById('qr-id').innerText = spool.id;
+            
+            const qrContainer = document.getElementById('qr-code-container');
+            qrContainer.innerHTML = ''; // clear old
+            new QRCode(qrContainer, {
+                text: spool.id.toString(),
+                width: 128, height: 128, colorDark : "#000000", colorLight : "#ffffff"
+            });
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+        function closeQRModal() { document.getElementById('qrModal').style.display = 'none'; }
+
+        // --- DATA EXPORT / IMPORT ---
+        function exportData() {
+            const blob = new Blob([JSON.stringify(spools, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `inventory_${new Date().toISOString().slice(0,10)}.json`;
+            a.click(); URL.revokeObjectURL(url);
+        }
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        createSnapshot(); spools = imported; saveAndRender();
+                        alert("Imported! Snapshot of old data saved."); switchView('inventory', 'All');
+                    } else alert("Invalid format.");
+                } catch (err) { alert("Error reading JSON."); }
+            };
+            reader.readAsText(file); event.target.value = '';
+        }
+
+        // --- RENDER LOGIC ---
+        function generateSpoolHTML(spool) {
+            const pct = Math.max(0, Math.min(100, (spool.weight / (spool.maxWeight || 1000)) * 100));
+            const loc = spool.location || 'Unknown';
+            const notesHtml = spool.notes ? `<p class="spool-notes">📝 ${spool.notes}</p>` : '';
+            const searchLink = `https://www.amazon.com/s?k=${encodeURIComponent(`${spool.brand} ${spool.material} ${spool.color} 3d printer filament`)}`;
+            
+            // Value calculation
+            let costHtml = '';
+            if (spool.price > 0) {
+                const costPerGram = spool.price / (spool.maxWeight || 1000);
+                const remainingValue = (costPerGram * spool.weight).toFixed(2);
+                costHtml = `<span class="spool-cost"> ($${remainingValue} value left)</span>`;
+            }
+
+            return `
+                <div class="spool-item ${spool.weight <= 200 ? 'low-stock' : ''}">
+                    <div class="spool-info">
+                        <h3><a href="${spool.url || searchLink}" target="_blank">${spool.brand} - ${spool.color} (${spool.material}) 🔗</a></h3>
+                        <p>Remaining: <strong>${spool.weight}g</strong> / ${spool.maxWeight}g &nbsp;|&nbsp; <strong>${loc}</strong> ${costHtml}</p>
+                        ${notesHtml}
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%;"></div></div>
+                    </div>
+                    <div class="actions-col">
+                        <div class="btn-grid" style="margin-bottom: 0.2rem;">
+                            <button class="edit-btn" onclick="openEditModal(${spool.id})">🔧 Edit</button>
+                            <button class="qr-btn" onclick="openQRModal(${spool.id})">🏷️ Label</button>
+                            <button class="delete-btn" onclick="deleteSpool(${spool.id})">🗑️ Delete</button>
+                        </div>
+                        <div class="btn-grid">
+                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 10)">-10g</button>
+                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 50)">-50g</button>
+                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 100)">-100g</button>
+                        </div>
+                        <div class="action-row">
+                            <input type="number" id="custom-${spool.id}" placeholder="g" style="flex:1; width:60px;">
+                            <button class="drop-btn" onclick="customAdjust(${spool.id}, 'drop')">Drop</button>
+                            <button class="add-btn" onclick="customAdjust(${spool.id}, 'add')">Add</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderReorderDashboard() {
+            const list = document.getElementById('reorderList');
+            const lowSpools = spools.filter(s => s.weight <= 200).sort((a,b) => a.weight - b.weight);
+            list.innerHTML = lowSpools.length ? lowSpools.map(generateSpoolHTML).join('') : `<div class="empty-state">✅ All spools are well stocked!</div>`;
+        }
+
+        function renderSpools() {
+            updateNavButtons(); 
+            const list = document.getElementById('spoolList');
+            const searchQ = document.getElementById('searchInput').value.toLowerCase();
+            const sortMethod = document.getElementById('sortSelect').value;
+
+            let filtered = currentFilter !== 'All' ? spools.filter(s => s.material === currentFilter) : [...spools];
+            if (searchQ) filtered = filtered.filter(s => s.brand.toLowerCase().includes(searchQ) || s.color.toLowerCase().includes(searchQ) || s.material.toLowerCase().includes(searchQ) || (s.notes && s.notes.toLowerCase().includes(searchQ)) || (s.location && s.location.toLowerCase().includes(searchQ)));
+            if (filtered.length === 0) { list.innerHTML = `<div class="empty-state">No spools match your criteria.</div>`; return; }
+
+            if (sortMethod === 'material' && !searchQ) {
+                let html = '';
+                [...new Set(filtered.map(s => s.material))].sort().forEach(mat => {
+                    if (currentFilter === 'All') html += `<h2 class="material-header">${mat}</h2>`;
+                    html += filtered.filter(s => s.material === mat).sort((a,b) => a.weight - b.weight).map(generateSpoolHTML).join('');
+                });
+                list.innerHTML = html;
+            } else {
+                if (sortMethod === 'lowest') filtered.sort((a,b) => a.weight - b.weight);
+                else if (sortMethod === 'az') filtered.sort((a,b) => (a.brand+a.color).localeCompare(b.brand+b.color));
+                else if (sortMethod === 'location') filtered.sort((a,b) => (a.location||'').localeCompare(b.location||''));
+                else if (sortMethod === 'recent') filtered.sort((a,b) => b.id - a.id);
+                list.innerHTML = filtered.map(generateSpoolHTML).join('');
+            }
+        }
+        
+        // Initialize the app by pulling from Moonraker
+        loadInventory();
+        
+        // --- AUTO-DEDUCTION ENGINE ---
+        // Approximate Densities in g/cm³
+        const materialDensities = { 
+            "PLA": 1.24, "PLA-CF": 1.27, "PLA Silk": 1.24,
+            "PETG": 1.27, "PETG-CF": 1.29, "ABS": 1.04, 
+            "ASA": 1.07, "TPU": 1.21, "PC": 1.20,
+            "Nylon (PA)": 1.14, "PA-CF": 1.14
+        }; 
+
+async function checkPrinterUsage() {
+            try {
+                // FIXED: Moonraker API expects just the object name, no dots
+                const response = await fetch('/printer/objects/query?save_variables');
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                
+                // Safely navigate down to the variables list
+                const vars = data.result?.status?.save_variables?.variables;
+                if (!vars) return;
+
+                const mm_used = vars.pending_filament_mm || 0;
+
+                if (mm_used > 0) {
+                    console.log("🚨 Klipper reports filament used:", mm_used);
+                    
+                    const activeSpool = spools.find(s => s.location && s.location.trim().toLowerCase().startsWith('snapmaker u1'));
+                    
+                    if (!activeSpool) {
+                        console.warn("⚠️ Filament used, but no spool assigned to a 'Snapmaker U1 - Slot #' location in inventory!");
+                        return;
+                    }
+
+                    // Math: 1.75mm filament -> volume -> grams
+                    const density = materialDensities[activeSpool.material] || 1.24; 
+                    const gramsUsed = Math.round(((Math.PI * Math.pow(0.875, 2) * mm_used) / 1000) * density);
+                    
+                    console.log(`📉 Deducting ${gramsUsed}g from ${activeSpool.brand}`);
+                    
+                    activeSpool.weight = Math.max(0, activeSpool.weight - gramsUsed);
+                    
+                    // Save the new weight to database
+                    await saveAndRender();
+                    
+                    // Reset Klipper variable back to 0 so we don't double-charge
+                    console.log("🔄 Resetting Klipper variable to 0...");
+                    await fetch('/printer/gcode/script', { 
+                        method: 'POST', 
+                        headers: {'Content-Type':'application/json'}, 
+                        body: JSON.stringify({script: "SAVE_VARIABLE VARIABLE=pending_filament_mm VALUE=0"}) 
+                    });
+                    
+                    alert(`✅ Print Complete! Auto-deducted ${gramsUsed}g.`);
+                }
+            } catch (e) { 
+                console.error("❌ Auto-deduction error:", e); 
+            }
+        }
+
+// --- SNAPMAKER U1 SLOT LOAD LISTENER ---
+// This does NOT read RFID UID. It detects when a U1 slot changes to loaded.
+
+let lastSlotStates = {
+    1: null,
+    2: null,
+    3: null,
+    4: null
+};
+
+function getU1SlotStatesFromStatus(status) {
+    const left = status["filament_feed left"] || {};
+    const right = status["filament_feed right"] || {};
+
+    return {
+        1: !!left.extruder1?.filament_detected,
+        2: !!left.extruder0?.filament_detected,
+        3: !!right.extruder2?.filament_detected,
+        4: !!right.extruder3?.filament_detected
+    };
+}
+
+async function checkU1SlotChanges() {
+    try {
+        const response = await fetch('/printer/objects/query?filament_feed%20left&filament_feed%20right');
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const status = data.result?.status || {};
+        const slotStates = getU1SlotStatesFromStatus(status);
+
+        for (const slot of [1, 2, 3, 4]) {
+            const wasLoaded = lastSlotStates[slot];
+            const isLoaded = slotStates[slot];
+
+            // First run: initialize only, do not pop up.
+            if (wasLoaded === null) {
+                lastSlotStates[slot] = isLoaded;
+                continue;
+            }
+
+            // Detect newly loaded filament.
+            if (wasLoaded === false && isLoaded === true) {
+                handleSlotLoaded(slot);
+            }
+
+            lastSlotStates[slot] = isLoaded;
+        }
+    } catch (e) {
+        console.error("U1 slot polling error:", e);
+    }
+}
+
+function handleSlotLoaded(slot) {
+    const locationName = `Snapmaker U1 - Slot ${slot}`;
+
+    const options = spools
+        .map((s, index) => `${index + 1}: ${s.brand} ${s.color} (${s.material}) - ${s.weight}g`)
+        .join('\n');
+
+    const choice = prompt(
+        `Filament was loaded into ${locationName}.\n\n` +
+        `Enter spool number to assign it:\n\n${options}\n\n` +
+        `Or type NEW to add a new spool.`
+    );
+
+    if (!choice) return;
+
+    if (choice.trim().toLowerCase() === 'new') {
+        document.getElementById('location').value = locationName;
+        switchView('add');
+        document.getElementById('brand').focus();
+        return;
+    }
+
+    const selectedIndex = parseInt(choice, 10) - 1;
+    if (isNaN(selectedIndex) || !spools[selectedIndex]) {
+        alert("Invalid spool selection.");
+        return;
+    }
+
+    // Optional: clear any other spool already assigned to this slot
+    spools.forEach(s => {
+        if (s.location === locationName) {
+            s.location = "Storage Shelf 1";
+        }
+    });
+
+    spools[selectedIndex].location = locationName;
+    saveAndRender();
+
+    alert(`Assigned ${spools[selectedIndex].brand} ${spools[selectedIndex].color} to ${locationName}.`);
+}
+
+// Check every 3 seconds
+// setInterval(checkU1SlotChanges, 3000);
+
+    setInterval(checkPrinterUsage, 10000);
+
+    </script>
+</body>
+</html>
