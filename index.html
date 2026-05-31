@@ -112,6 +112,48 @@
         .cancel-btn { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); width: auto; padding: 0.6rem 1.5rem; }
         .save-edit-btn { background: #3b82f6; color: white; width: auto; padding: 0.6rem 1.5rem; }
 
+
+
+        /* RFID / OPENRFID STATUS */
+        .rfid-status-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 6px solid #10b981;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px var(--shadow);
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            display: none;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .rfid-status-card.visible { display: flex; }
+        .rfid-status-main { font-size: 0.95rem; line-height: 1.35; }
+        .rfid-status-main strong { color: #10b981; }
+        .rfid-status-meta { font-size: 0.8rem; color: var(--muted-text); }
+        .rfid-pill-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+        .rfid-pill { font-size: 0.75rem; color: var(--text-color); background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 999px; padding: 0.15rem 0.5rem; }
+        .color-chip { display: inline-block; width: 0.85rem; height: 0.85rem; border-radius: 999px; border: 1px solid var(--border-color); vertical-align: -0.12rem; margin-right: 0.25rem; background: var(--border-color); }
+        .rfid-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.35rem 0.75rem; margin-top: 0.55rem; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); }
+        .rfid-detail { font-size: 0.78rem; color: var(--muted-text); line-height: 1.25; }
+        .rfid-detail strong { display: block; color: var(--text-color); font-size: 0.82rem; margin-bottom: 0.08rem; }
+        .settings-line { font-size: 0.83rem !important; color: var(--muted-text) !important; margin-top: 0.35rem !important; }
+        .spool-summary-line { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 0.35rem; }
+        .advanced-toggle-btn { width: auto; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 999px; padding: 0.28rem 0.65rem; font-size: 0.78rem; font-weight: 700; }
+        .advanced-toggle-btn:hover { background: var(--btn-hover); }
+        .advanced-details { display: none; margin-top: 0.45rem; }
+        .advanced-details.visible { display: block; }
+
+        .edit-mode-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0 1rem 0; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); }
+        .edit-mode-btn { width: auto; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); border-radius: 999px; padding: 0.45rem 0.9rem; font-size: 0.88rem; font-weight: 800; }
+        .edit-mode-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
+        .edit-help-text { color: var(--muted-text); font-size: 0.83rem; margin: -0.35rem 0 1rem 0; }
+        .edit-advanced-section { display: none; grid-column: 1 / -1; border-top: 1px solid var(--border-color); margin-top: 0.35rem; padding-top: 1rem; }
+        .edit-advanced-section.visible { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+        .edit-advanced-section h4 { grid-column: 1 / -1; margin: 0; color: var(--text-color); }
+
         /* QR PRINT LABEL STYLES */
         #qr-print-area { text-align: center; }
         #qr-code-container { margin: 1.5rem auto; display: flex; justify-content: center; background: white; padding: 1rem; border-radius: 8px; width: max-content; }
@@ -144,7 +186,9 @@
     <div id="addView" class="view-section card">
         <h3>Add New Spool</h3>
         <div class="form-grid">
-            <div class="input-group"><label>Brand</label><input type="text" id="brand" placeholder="e.g. Hatchbox"></div>
+            <div class="input-group"><label>Brand / Manufacturer</label><input type="text" id="brand" placeholder="e.g. Polymaker"></div>
+            <div class="input-group"><label>Vendor</label><input type="text" id="vendor" placeholder="e.g. Snapmaker"></div>
+            <div class="input-group"><label>RFID UID</label><input type="text" id="rfidUid" placeholder="Auto-filled from RFID"></div>
             <div class="input-group">
                 <label>Material</label>
                 <select id="material">
@@ -158,7 +202,8 @@
                     <option value="Support (Other)">Support (Other)</option>
                 </select>
             </div>
-            <div class="input-group"><label>Color</label><input type="text" id="color" placeholder="e.g. Matte Black"></div>
+            <div class="input-group"><label>Color Name</label><input type="text" id="color" placeholder="e.g. Yellow"></div>
+            <div class="input-group"><label>Color Hex</label><input type="text" id="colorHex" placeholder="#F4C032"></div>
             <div class="input-group">
                 <label>Location</label>
 				<select id="location">
@@ -178,8 +223,18 @@
             </div>
             <div class="input-group"><label>Current Weight</label><input type="number" id="weight" value="1000"></div>
             <div class="input-group"><label>Price ($) (Optional)</label><input type="number" id="price" step="0.01" placeholder="e.g. 19.99"></div>
+            <div class="input-group"><label>SKU</label><input type="text" id="sku" placeholder="RFID SKU"></div>
+            <div class="input-group"><label>Diameter (mm)</label><input type="number" id="diameter" step="0.01" placeholder="1.75"></div>
+            <div class="input-group"><label>Hotend Min °C</label><input type="number" id="hotendMin" placeholder="190"></div>
+            <div class="input-group"><label>Hotend Max °C</label><input type="number" id="hotendMax" placeholder="230"></div>
+            <div class="input-group"><label>Bed Temp °C</label><input type="number" id="bedTemp" placeholder="60"></div>
+            <div class="input-group"><label>First Layer °C</label><input type="number" id="firstLayerTemp" placeholder="230"></div>
+            <div class="input-group"><label>Other Layers °C</label><input type="number" id="otherLayerTemp" placeholder="220"></div>
+            <div class="input-group"><label>Drying Temp °C</label><input type="number" id="dryingTemp" placeholder="55"></div>
+            <div class="input-group"><label>Drying Time (hours)</label><input type="number" id="dryingTime" step="0.1" placeholder="6"></div>
+            <div class="input-group"><label>Manufactured On</label><input type="text" id="manufacturedOn" placeholder="2026-01-01"></div>
             
-            <div class="input-group full-width"><label>Print Profile Notes (Optional)</label><input type="text" id="notes" placeholder="e.g., Prints best at 265°C..."></div>
+            <div class="input-group full-width"><label>Print Profile Notes (Optional)</label><input type="text" id="notes" placeholder="e.g., Prints best at 220°C..."></div>
             <div class="full-width flex-row" style="margin-top: 0.5rem;">
                 <div class="input-group url-input-wrapper"><label>Reorder Link (Optional)</label><input type="url" id="spoolUrl" placeholder="https://amazon.com/..."></div>
                 <button class="add-spool-btn" onclick="addSpool()">Save to Inventory</button>
@@ -212,6 +267,14 @@
     </div>
 
     <div id="inventoryView" class="view-section active-view">
+
+        <div id="rfidStatus" class="rfid-status-card">
+            <div>
+                <div class="rfid-status-main" id="rfidStatusMain"><strong>RFID ready.</strong></div>
+                <div class="rfid-status-meta" id="rfidStatusMeta">Waiting for OpenRFID scans...</div>
+            </div>
+            <button class="quick-btn" style="width:auto;" onclick="processLastRFIDAgain()">Process Last RFID Again</button>
+        </div>
         <div class="toolbar">
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search brand, color, notes, location..." onkeyup="renderSpools()">
             <select id="sortSelect" class="sort-box" onchange="renderSpools()">
@@ -229,8 +292,15 @@
         <div class="modal-content">
             <h3>Edit Spool Details</h3>
             <input type="hidden" id="edit-id">
+
+            <div class="edit-mode-bar">
+                <button type="button" class="edit-mode-btn active" id="editBasicBtn" onclick="setEditMode('basic')">Basic</button>
+                <button type="button" class="edit-mode-btn" id="editAdvancedBtn" onclick="setEditMode('advanced')">Advanced</button>
+            </div>
+            <p class="edit-help-text" id="editModeHelp">Basic mode shows the fields you usually edit. Advanced mode adds RFID, color hex, SKU, temperature, and drying metadata.</p>
+
             <div class="form-grid">
-                <div class="input-group"><label>Brand</label><input type="text" id="edit-brand"></div>
+                <div class="input-group"><label>Brand / Manufacturer</label><input type="text" id="edit-brand"></div>
                 <div class="input-group">
                     <label>Material</label>
                     <select id="edit-material">
@@ -240,19 +310,19 @@
                         <option value="Nylon (PA)">Nylon (PA)</option><option value="PA-CF">PA-CF</option><option value="Wood">Wood</option>
                     </select>
                 </div>
-                <div class="input-group"><label>Color</label><input type="text" id="edit-color"></div>
+                <div class="input-group"><label>Color Name</label><input type="text" id="edit-color"></div>
                 <div class="input-group">
                     <label>Location</label>
-				<select id="edit-location">
-                    <option value="Snapmaker U1 - Slot 1">Snapmaker U1 1</option>
-                    <option value="Snapmaker U1 - Slot 2">Snapmaker U1 2</option>
-                    <option value="Snapmaker U1 - Slot 3">Snapmaker U1 3</option>
-                    <option value="Snapmaker U1 - Slot 4">Snapmaker U1 4</option>
-                    <option value="Storage Shelf 1">Storage Shelf 1</option>
-                    <option value="Storage Shelf 2">Storage Shelf 2</option>
-                    <option value="Dry Box">Dry Box</option>
-                    <option value="AMS">AMS</option>
-                </select>
+                    <select id="edit-location">
+                        <option value="Snapmaker U1 - Slot 1">Snapmaker U1 1</option>
+                        <option value="Snapmaker U1 - Slot 2">Snapmaker U1 2</option>
+                        <option value="Snapmaker U1 - Slot 3">Snapmaker U1 3</option>
+                        <option value="Snapmaker U1 - Slot 4">Snapmaker U1 4</option>
+                        <option value="Storage Shelf 1">Storage Shelf 1</option>
+                        <option value="Storage Shelf 2">Storage Shelf 2</option>
+                        <option value="Dry Box">Dry Box</option>
+                        <option value="AMS">AMS</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label>Spool Size (Max)</label>
@@ -262,6 +332,23 @@
                 <div class="input-group"><label>Purchase Price ($)</label><input type="number" id="edit-price" step="0.01"></div>
                 <div class="input-group full-width"><label>Print Profile Notes</label><input type="text" id="edit-notes"></div>
                 <div class="input-group full-width"><label>Reorder Link</label><input type="url" id="edit-spoolUrl"></div>
+
+                <div class="edit-advanced-section" id="editAdvancedSection">
+                    <h4>Advanced RFID & Filament Metadata</h4>
+                    <div class="input-group"><label>Vendor</label><input type="text" id="edit-vendor"></div>
+                    <div class="input-group"><label>RFID UID</label><input type="text" id="edit-rfidUid"></div>
+                    <div class="input-group"><label>Color Hex</label><input type="text" id="edit-colorHex"></div>
+                    <div class="input-group"><label>SKU</label><input type="text" id="edit-sku"></div>
+                    <div class="input-group"><label>Diameter (mm)</label><input type="number" id="edit-diameter" step="0.01"></div>
+                    <div class="input-group"><label>Hotend Min °C</label><input type="number" id="edit-hotendMin"></div>
+                    <div class="input-group"><label>Hotend Max °C</label><input type="number" id="edit-hotendMax"></div>
+                    <div class="input-group"><label>Bed Temp °C</label><input type="number" id="edit-bedTemp"></div>
+                    <div class="input-group"><label>First Layer °C</label><input type="number" id="edit-firstLayerTemp"></div>
+                    <div class="input-group"><label>Other Layers °C</label><input type="number" id="edit-otherLayerTemp"></div>
+                    <div class="input-group"><label>Drying Temp °C</label><input type="number" id="edit-dryingTemp"></div>
+                    <div class="input-group"><label>Drying Time (hours)</label><input type="number" id="edit-dryingTime" step="0.1"></div>
+                    <div class="input-group"><label>Manufactured On</label><input type="text" id="edit-manufacturedOn"></div>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
@@ -301,6 +388,22 @@
 
         let spools = [];
         let currentFilter = 'All';
+
+        // --- RFID / OpenRFID STATE ---
+        // OpenRFID exporter should write the newest tag read to Moonraker DB:
+        // namespace=fluidd, key=u1_last_rfid_tag
+        let pendingNfcUid = null;
+        let pendingOpenRFIDTag = null;
+        let lastProcessedCardUid = null;
+        let lastSeenOpenRFIDTag = null;
+
+        function jsArg(value) {
+            return JSON.stringify(String(value));
+        }
+
+        function safeDomId(value) {
+            return String(value).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
 
         // --- NAVIGATION LOGIC ---
         function switchView(viewName, filter = 'All') {
@@ -448,48 +551,73 @@
         // --- CORE INVENTORY ACTIONS ---
         function addSpool() {
             const brand = document.getElementById('brand').value.trim();
+            const vendor = document.getElementById('vendor').value.trim();
+            const rfidUidInput = normalizeUid(document.getElementById('rfidUid').value.trim());
             const material = document.getElementById('material').value;
             const color = document.getElementById('color').value.trim();
+            const colorHex = normalizeOpenRFIDColor(document.getElementById('colorHex').value.trim());
             const location = document.getElementById('location').value;
             const capacity = parseInt(document.getElementById('capacity').value);
             const currentWeight = parseInt(document.getElementById('weight').value);
             const price = parseFloat(document.getElementById('price').value) || 0;
+            const sku = document.getElementById('sku').value.trim();
+            const diameter = document.getElementById('diameter').value.trim();
+            const hotendMin = document.getElementById('hotendMin').value.trim();
+            const hotendMax = document.getElementById('hotendMax').value.trim();
+            const bedTemp = document.getElementById('bedTemp').value.trim();
+            const firstLayerTemp = document.getElementById('firstLayerTemp').value.trim();
+            const otherLayerTemp = document.getElementById('otherLayerTemp').value.trim();
+            const dryingTemp = document.getElementById('dryingTemp').value.trim();
+            const dryingTime = document.getElementById('dryingTime').value.trim();
+            const manufacturedOn = document.getElementById('manufacturedOn').value.trim();
             const notes = document.getElementById('notes').value.trim();
             const url = document.getElementById('spoolUrl').value.trim();
 
             if (!brand || !color || isNaN(capacity) || isNaN(currentWeight)) return alert("Please fill required fields.");
 
-		// Use the scanned RFID if available, otherwise generate a standard timestamp ID
-        const finalId = pendingNfcUid ? pendingNfcUid : Date.now();
+            // Use the scanned RFID UID if available, then manual RFID UID, otherwise generate a timestamp ID.
+            const finalRfidUid = pendingNfcUid ? normalizeUid(pendingNfcUid) : rfidUidInput;
+            const finalId = finalRfidUid ? finalRfidUid : String(Date.now());
 
-        spools.push({ 
-            id: finalId, 
-            brand, material, color, location, 
-            weight: currentWeight, maxWeight: capacity, 
-            price, notes, url 
-        });
-        
-        // Clear the pending tag and reset the placeholder after saving
-        pendingNfcUid = null;
-        document.getElementById('brand').placeholder = "e.g. Hatchbox";
+            spools.push({ 
+                id: finalId,
+                rfidUid: finalRfidUid,
+                openRfid: pendingOpenRFIDTag || null,
+                vendor,
+                brand, material, color, colorName: color, colorHex, location,
+                weight: currentWeight, maxWeight: capacity,
+                sku, diameter,
+                hotendMin, hotendMax, bedTemp, firstLayerTemp, otherLayerTemp,
+                dryingTemp, dryingTime, manufacturedOn,
+                price, notes, url 
+            });
             
-            document.getElementById('brand').value = ''; document.getElementById('color').value = '';
-            document.getElementById('notes').value = ''; document.getElementById('spoolUrl').value = '';
-            document.getElementById('price').value = ''; document.getElementById('weight').value = '1000';
+            // Clear the pending tag and reset the placeholder after saving.
+            pendingNfcUid = null;
+            pendingOpenRFIDTag = null;
+            document.getElementById('brand').placeholder = "e.g. Polymaker";
+            
+            ['brand','vendor','rfidUid','color','colorHex','sku','diameter','hotendMin','hotendMax','bedTemp','firstLayerTemp','otherLayerTemp','dryingTemp','dryingTime','manufacturedOn','notes','spoolUrl'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('price').value = '';
+            document.getElementById('weight').value = '1000';
+            document.getElementById('capacity').value = '1000';
             
             saveAndRender();
             switchView('inventory', material);
         }
 
         function quickDeduct(id, amount) {
-            const spool = spools.find(s => s.id === id);
+            const spool = spools.find(s => String(s.id) === String(id));
             if (spool) { spool.weight = Math.max(0, spool.weight - amount); saveAndRender(); }
         }
 
         function customAdjust(id, actionType) {
-            const input = document.getElementById(`custom-${id}`);
+            const input = document.getElementById(`custom-${safeDomId(id)}`);
             const amount = parseInt(input.value);
-            const spool = spools.find(s => s.id === id);
+            const spool = spools.find(s => String(s.id) === String(id));
             if (!spool || isNaN(amount)) return;
             if (actionType === 'drop') spool.weight = Math.max(0, spool.weight - amount);
             else { spool.weight += amount; if (spool.weight > spool.maxWeight) spool.maxWeight = spool.weight; }
@@ -498,24 +626,52 @@
 
         function deleteSpool(id) {
             if (confirm("Delete this spool? (A snapshot will be created)")) { 
-                createSnapshot(); spools = spools.filter(s => s.id !== id); 
+                createSnapshot(); spools = spools.filter(s => String(s.id) !== String(id)); 
                 if (spools.filter(s => s.material === currentFilter).length === 0) currentFilter = 'All';
                 saveAndRender(); 
             }
         }
 
         // --- EDIT MODAL LOGIC ---
+
+        function setEditMode(mode) {
+            const isAdvanced = mode === 'advanced';
+            document.getElementById('editBasicBtn')?.classList.toggle('active', !isAdvanced);
+            document.getElementById('editAdvancedBtn')?.classList.toggle('active', isAdvanced);
+            document.getElementById('editAdvancedSection')?.classList.toggle('visible', isAdvanced);
+            const help = document.getElementById('editModeHelp');
+            if (help) {
+                help.innerText = isAdvanced
+                    ? 'Advanced mode: RFID UID, hex color, SKU, printer temperatures, and drying metadata are editable.'
+                    : 'Basic mode: quick fields for day-to-day inventory edits.';
+            }
+        }
+
         function openEditModal(id) {
-            const spool = spools.find(s => s.id === id);
+            const spool = spools.find(s => String(s.id) === String(id));
             if (!spool) return;
-            document.getElementById('edit-id').value = spool.id;
-            document.getElementById('edit-brand').value = spool.brand;
-            document.getElementById('edit-material').value = spool.material;
-            document.getElementById('edit-color').value = spool.color;
+            setEditMode('basic');
+            document.getElementById('edit-id').value = String(spool.id);
+            document.getElementById('edit-brand').value = spool.brand || '';
+            document.getElementById('edit-vendor').value = spool.vendor || spool.openRfid?.vendor || '';
+            document.getElementById('edit-rfidUid').value = spool.rfidUid || '';
+            document.getElementById('edit-material').value = spool.material || 'PLA';
+            document.getElementById('edit-color').value = spool.colorName || spool.color || '';
+            document.getElementById('edit-colorHex').value = spool.colorHex || normalizeOpenRFIDColor(spool.openRfid?.color || '');
             document.getElementById('edit-location').value = spool.location || 'Unknown';
             document.getElementById('edit-capacity').value = spool.maxWeight || 1000;
             document.getElementById('edit-weight').value = spool.weight;
             document.getElementById('edit-price').value = spool.price || '';
+            document.getElementById('edit-sku').value = spool.sku || spool.openRfid?.sku || '';
+            document.getElementById('edit-diameter').value = spool.diameter || spool.openRfid?.diameter || '';
+            document.getElementById('edit-hotendMin').value = spool.hotendMin || spool.openRfid?.hotend_min || '';
+            document.getElementById('edit-hotendMax').value = spool.hotendMax || spool.openRfid?.hotend_max || '';
+            document.getElementById('edit-bedTemp').value = spool.bedTemp || spool.openRfid?.bed_temp || '';
+            document.getElementById('edit-firstLayerTemp').value = spool.firstLayerTemp || spool.openRfid?.first_layer_temp || '';
+            document.getElementById('edit-otherLayerTemp').value = spool.otherLayerTemp || spool.openRfid?.other_layer_temp || '';
+            document.getElementById('edit-dryingTemp').value = spool.dryingTemp || spool.openRfid?.drying_temp || '';
+            document.getElementById('edit-dryingTime').value = spool.dryingTime || spool.openRfid?.drying_time || '';
+            document.getElementById('edit-manufacturedOn').value = spool.manufacturedOn || spool.openRfid?.manufactured_on || '';
             document.getElementById('edit-notes').value = spool.notes || '';
             document.getElementById('edit-spoolUrl').value = spool.url || '';
             document.getElementById('editModal').style.display = 'flex';
@@ -523,16 +679,30 @@
         function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
         
         function saveEdit() {
-            const id = parseInt(document.getElementById('edit-id').value);
-            const spool = spools.find(s => s.id === id);
+            const id = document.getElementById('edit-id').value;
+            const spool = spools.find(s => String(s.id) === String(id));
             if (spool) {
                 spool.brand = document.getElementById('edit-brand').value.trim();
+                spool.vendor = document.getElementById('edit-vendor').value.trim();
+                spool.rfidUid = normalizeUid(document.getElementById('edit-rfidUid').value.trim());
                 spool.material = document.getElementById('edit-material').value;
                 spool.color = document.getElementById('edit-color').value.trim();
+                spool.colorName = spool.color;
+                spool.colorHex = normalizeOpenRFIDColor(document.getElementById('edit-colorHex').value.trim());
                 spool.location = document.getElementById('edit-location').value;
                 spool.maxWeight = parseInt(document.getElementById('edit-capacity').value);
                 spool.weight = parseInt(document.getElementById('edit-weight').value);
                 spool.price = parseFloat(document.getElementById('edit-price').value) || 0;
+                spool.sku = document.getElementById('edit-sku').value.trim();
+                spool.diameter = document.getElementById('edit-diameter').value.trim();
+                spool.hotendMin = document.getElementById('edit-hotendMin').value.trim();
+                spool.hotendMax = document.getElementById('edit-hotendMax').value.trim();
+                spool.bedTemp = document.getElementById('edit-bedTemp').value.trim();
+                spool.firstLayerTemp = document.getElementById('edit-firstLayerTemp').value.trim();
+                spool.otherLayerTemp = document.getElementById('edit-otherLayerTemp').value.trim();
+                spool.dryingTemp = document.getElementById('edit-dryingTemp').value.trim();
+                spool.dryingTime = document.getElementById('edit-dryingTime').value.trim();
+                spool.manufacturedOn = document.getElementById('edit-manufacturedOn').value.trim();
                 spool.notes = document.getElementById('edit-notes').value.trim();
                 spool.url = document.getElementById('edit-spoolUrl').value.trim();
                 saveAndRender(); closeEditModal();
@@ -541,7 +711,7 @@
 
         // --- QR MODAL LOGIC ---
         function openQRModal(id) {
-            const spool = spools.find(s => s.id === id);
+            const spool = spools.find(s => String(s.id) === String(id));
             if (!spool) return;
             document.getElementById('qr-title').innerText = `${spool.brand} ${spool.material}`;
             document.getElementById('qr-subtitle').innerText = spool.color;
@@ -581,11 +751,84 @@
         }
 
         // --- RENDER LOGIC ---
+        function toggleAdvancedDetails(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            const isVisible = el.classList.toggle('visible');
+            const btn = document.querySelector(`[data-advanced-target="${elementId}"]`);
+            if (btn) btn.textContent = isVisible ? 'Hide Advanced' : 'Advanced';
+        }
+
+        function buildRFIDCardHtml(spool) {
+            const tag = spool.openRfid || {};
+            const uid = normalizeUid(spool.rfidUid || tag.card_uid || '');
+            const vendor = firstNonEmpty(spool.vendor, tag.vendor, '');
+            const manufacturer = firstNonEmpty(spool.brand, tag.manufacturer, tag.brand, '');
+            const subtype = firstNonEmpty(spool.subtype, tag.subtype, '');
+            const colorHex = normalizeOpenRFIDColor(spool.colorHex || tag.color || '');
+            const colorName = firstNonEmpty(spool.colorName, spool.color && !String(spool.color).startsWith('#') ? spool.color : '', friendlyColorName(colorHex));
+            const chipStyle = colorHex && colorHex.startsWith('#') ? `style="background:${colorHex};"` : '';
+            const sku = firstNonEmpty(spool.sku, tag.sku, '');
+            const diameter = firstNonEmpty(spool.diameter, tag.diameter, '');
+            const hotendMin = firstNonEmpty(spool.hotendMin, tag.hotend_min, '');
+            const hotendMax = firstNonEmpty(spool.hotendMax, tag.hotend_max, '');
+            const bedTemp = firstNonEmpty(spool.bedTemp, tag.bed_temp, '');
+            const firstLayerTemp = firstNonEmpty(spool.firstLayerTemp, tag.first_layer_temp, '');
+            const otherLayerTemp = firstNonEmpty(spool.otherLayerTemp, tag.other_layer_temp, '');
+            const dryingTemp = firstNonEmpty(spool.dryingTemp, tag.drying_temp, '');
+            const dryingTime = firstNonEmpty(spool.dryingTime, tag.drying_time, '');
+            const manufacturedOn = firstNonEmpty(spool.manufacturedOn, tag.manufactured_on, '');
+
+            const hasAdvanced = uid || vendor || manufacturer || subtype || colorHex || hotendMin || hotendMax || bedTemp || firstLayerTemp || otherLayerTemp || dryingTemp || dryingTime || sku || diameter || manufacturedOn;
+            if (!hasAdvanced && !colorName) return '';
+
+            const recommended = [];
+            if (hotendMin || hotendMax) recommended.push(`Hotend ${hotendMin || '?'}-${hotendMax || '?'}°C`);
+            if (bedTemp) recommended.push(`Bed ${bedTemp}°C`);
+            if (firstLayerTemp) recommended.push(`First layer ${firstLayerTemp}°C`);
+            if (otherLayerTemp) recommended.push(`Other layers ${otherLayerTemp}°C`);
+
+            const advancedId = `advanced-${safeDomId(spool.id)}`;
+            const quickPills = [];
+            if (colorName || colorHex) quickPills.push(`<span class="rfid-pill"><span class="color-chip" ${chipStyle}></span>${escapeHtml(colorName || 'Unknown Color')}</span>`);
+            if (subtype) quickPills.push(`<span class="rfid-pill">${escapeHtml(subtype)}</span>`);
+            if (vendor) quickPills.push(`<span class="rfid-pill">Vendor: ${escapeHtml(vendor)}</span>`);
+
+            return `
+                <div class="spool-summary-line">
+                    ${quickPills.join('')}
+                    ${hasAdvanced ? `<button class="advanced-toggle-btn" data-advanced-target="${advancedId}" onclick='toggleAdvancedDetails(${jsArg(advancedId)})'>Advanced</button>` : ''}
+                </div>
+                ${hasAdvanced ? `
+                <div id="${advancedId}" class="advanced-details">
+                    <div class="rfid-detail-grid">
+                        ${uid ? `<div class="rfid-detail"><strong>RFID UID</strong>${escapeHtml(uid)}</div>` : ''}
+                        ${vendor ? `<div class="rfid-detail"><strong>Vendor</strong>${escapeHtml(vendor)}</div>` : ''}
+                        ${manufacturer ? `<div class="rfid-detail"><strong>Manufacturer</strong>${escapeHtml(manufacturer)}</div>` : ''}
+                        ${subtype ? `<div class="rfid-detail"><strong>Subtype</strong>${escapeHtml(subtype)}</div>` : ''}
+                        ${colorName || colorHex ? `<div class="rfid-detail"><strong>Color Name</strong><span class="color-chip" ${chipStyle}></span>${escapeHtml(colorName || 'Unknown')}</div>` : ''}
+                        ${colorHex ? `<div class="rfid-detail"><strong>Color Hex</strong>${escapeHtml(colorHex)}</div>` : ''}
+                        ${recommended.length ? `<div class="rfid-detail"><strong>Recommended Settings</strong>${escapeHtml(recommended.join(' • '))}</div>` : ''}
+                        ${dryingTemp || dryingTime ? `<div class="rfid-detail"><strong>Drying</strong>${escapeHtml(`${dryingTemp || '?'}°C for ${dryingTime || '?'}h`)}</div>` : ''}
+                        ${sku ? `<div class="rfid-detail"><strong>SKU</strong>${escapeHtml(sku)}</div>` : ''}
+                        ${diameter ? `<div class="rfid-detail"><strong>Diameter</strong>${escapeHtml(diameter)}mm</div>` : ''}
+                        ${manufacturedOn ? `<div class="rfid-detail"><strong>Manufactured</strong>${escapeHtml(manufacturedOn)}</div>` : ''}
+                    </div>
+                </div>` : ''}`;
+        }
+
         function generateSpoolHTML(spool) {
             const pct = Math.max(0, Math.min(100, (spool.weight / (spool.maxWeight || 1000)) * 100));
             const loc = spool.location || 'Unknown';
             const notesHtml = spool.notes ? `<p class="spool-notes">📝 ${spool.notes}</p>` : '';
             const searchLink = `https://www.amazon.com/s?k=${encodeURIComponent(`${spool.brand} ${spool.material} ${spool.color} 3d printer filament`)}`;
+            const idArg = jsArg(spool.id);
+            const customInputId = `custom-${safeDomId(spool.id)}`;
+            const rfidHtml = buildRFIDCardHtml(spool);
+            const displayColor = spool.colorName || spool.color || friendlyColorName(spool.colorHex || spool.openRfid?.color || '');
+            // Recommended settings are now hidden behind the Advanced button to keep cards clean.
+            const settingsHtml = '';
             
             // Value calculation
             let costHtml = '';
@@ -598,26 +841,28 @@
             return `
                 <div class="spool-item ${spool.weight <= 200 ? 'low-stock' : ''}">
                     <div class="spool-info">
-                        <h3><a href="${spool.url || searchLink}" target="_blank">${spool.brand} - ${spool.color} (${spool.material}) 🔗</a></h3>
+                        <h3><a href="${spool.url || searchLink}" target="_blank">${spool.brand} - ${displayColor} (${spool.material}) 🔗</a></h3>
                         <p>Remaining: <strong>${spool.weight}g</strong> / ${spool.maxWeight}g &nbsp;|&nbsp; <strong>${loc}</strong> ${costHtml}</p>
+                        ${settingsHtml}
                         ${notesHtml}
+                        ${rfidHtml}
                         <div class="bar-bg"><div class="bar-fill" style="width: ${pct}%;"></div></div>
                     </div>
                     <div class="actions-col">
                         <div class="btn-grid" style="margin-bottom: 0.2rem;">
-                            <button class="edit-btn" onclick="openEditModal(${spool.id})">🔧 Edit</button>
-                            <button class="qr-btn" onclick="openQRModal(${spool.id})">🏷️ Label</button>
-                            <button class="delete-btn" onclick="deleteSpool(${spool.id})">🗑️ Delete</button>
+                            <button class="edit-btn" onclick='openEditModal(${idArg})'>🔧 Edit</button>
+                            <button class="qr-btn" onclick='openQRModal(${idArg})'>🏷️ Label</button>
+                            <button class="delete-btn" onclick='deleteSpool(${idArg})'>🗑️ Delete</button>
                         </div>
                         <div class="btn-grid">
-                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 10)">-10g</button>
-                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 50)">-50g</button>
-                            <button class="quick-btn" onclick="quickDeduct(${spool.id}, 100)">-100g</button>
+                            <button class="quick-btn" onclick='quickDeduct(${idArg}, 10)'>-10g</button>
+                            <button class="quick-btn" onclick='quickDeduct(${idArg}, 50)'>-50g</button>
+                            <button class="quick-btn" onclick='quickDeduct(${idArg}, 100)'>-100g</button>
                         </div>
                         <div class="action-row">
-                            <input type="number" id="custom-${spool.id}" placeholder="g" style="flex:1; width:60px;">
-                            <button class="drop-btn" onclick="customAdjust(${spool.id}, 'drop')">Drop</button>
-                            <button class="add-btn" onclick="customAdjust(${spool.id}, 'add')">Add</button>
+                            <input type="number" id="${customInputId}" placeholder="g" style="flex:1; width:60px;">
+                            <button class="drop-btn" onclick='customAdjust(${idArg}, "drop")'>Drop</button>
+                            <button class="add-btn" onclick='customAdjust(${idArg}, "add")'>Add</button>
                         </div>
                     </div>
                 </div>`;
@@ -636,7 +881,7 @@
             const sortMethod = document.getElementById('sortSelect').value;
 
             let filtered = currentFilter !== 'All' ? spools.filter(s => s.material === currentFilter) : [...spools];
-            if (searchQ) filtered = filtered.filter(s => s.brand.toLowerCase().includes(searchQ) || s.color.toLowerCase().includes(searchQ) || s.material.toLowerCase().includes(searchQ) || (s.notes && s.notes.toLowerCase().includes(searchQ)) || (s.location && s.location.toLowerCase().includes(searchQ)));
+            if (searchQ) filtered = filtered.filter(s => [s.brand, s.vendor, s.color, s.colorName, s.colorHex, s.material, s.notes, s.location, s.rfidUid, s.sku, s.subtype, s.hotendMin, s.hotendMax, s.bedTemp, s.dryingTemp, s.dryingTime, s.openRfid?.vendor, s.openRfid?.manufacturer, s.openRfid?.subtype, s.openRfid?.sku].filter(Boolean).join(' ').toLowerCase().includes(searchQ));
             if (filtered.length === 0) { list.innerHTML = `<div class="empty-state">No spools match your criteria.</div>`; return; }
 
             if (sortMethod === 'material' && !searchQ) {
@@ -650,7 +895,7 @@
                 if (sortMethod === 'lowest') filtered.sort((a,b) => a.weight - b.weight);
                 else if (sortMethod === 'az') filtered.sort((a,b) => (a.brand+a.color).localeCompare(b.brand+b.color));
                 else if (sortMethod === 'location') filtered.sort((a,b) => (a.location||'').localeCompare(b.location||''));
-                else if (sortMethod === 'recent') filtered.sort((a,b) => b.id - a.id);
+                else if (sortMethod === 'recent') filtered.sort((a,b) => String(b.id).localeCompare(String(a.id))); 
                 list.innerHTML = filtered.map(generateSpoolHTML).join('');
             }
         }
@@ -669,56 +914,490 @@
 
 async function checkPrinterUsage() {
             try {
-                // FIXED: Moonraker API expects just the object name, no dots
                 const response = await fetch('/printer/objects/query?save_variables');
                 if (!response.ok) return;
-                
+
                 const data = await response.json();
-                
-                // Safely navigate down to the variables list
                 const vars = data.result?.status?.save_variables?.variables;
                 if (!vars) return;
 
-                const mm_used = vars.pending_filament_mm || 0;
+                // Preferred slot-specific variables from the updated Klipper tracker.
+                // These are filament lengths in mm, mapped to inventory locations.
+                const slotUsage = [
+                    { slot: 1, mm: Number(vars.pending_filament_slot1_mm || 0) },
+                    { slot: 2, mm: Number(vars.pending_filament_slot2_mm || 0) },
+                    { slot: 3, mm: Number(vars.pending_filament_slot3_mm || 0) },
+                    { slot: 4, mm: Number(vars.pending_filament_slot4_mm || 0) }
+                ];
 
-                if (mm_used > 0) {
-                    console.log("🚨 Klipper reports filament used:", mm_used);
-                    
-                    const activeSpool = spools.find(s => s.location && s.location.trim().toLowerCase().startsWith('snapmaker u1'));
-                    
-                    if (!activeSpool) {
-                        console.warn("⚠️ Filament used, but no spool assigned to a 'Snapmaker U1 - Slot #' location in inventory!");
-                        return;
+                let deductions = [];
+                let usedSlotSpecific = slotUsage.some(item => item.mm > 0);
+
+                if (usedSlotSpecific) {
+                    for (const item of slotUsage) {
+                        if (item.mm <= 0) continue;
+
+                        const locationName = `Snapmaker U1 - Slot ${item.slot}`;
+                        const activeSpool = spools.find(s => String(s.location || '').trim() === locationName);
+
+                        if (!activeSpool) {
+                            console.warn(`⚠️ Filament used in ${locationName}, but no spool is assigned there.`);
+                            deductions.push(`⚠️ ${locationName}: ${Math.round(item.mm)}mm used, but no spool assigned`);
+                            continue;
+                        }
+
+                        const density = materialDensities[activeSpool.material] || 1.24;
+                        const gramsUsed = filamentMmToGrams(item.mm, density);
+
+                        activeSpool.weight = Math.max(0, Number(activeSpool.weight || 0) - gramsUsed);
+                        deductions.push(`${locationName}: -${gramsUsed}g from ${activeSpool.brand} ${activeSpool.color}`);
                     }
+                } else {
+                    // Backwards-compatible fallback for the older single pending_filament_mm variable.
+                    const mm_used = Number(vars.pending_filament_mm || 0);
 
-                    // Math: 1.75mm filament -> volume -> grams
-                    const density = materialDensities[activeSpool.material] || 1.24; 
-                    const gramsUsed = Math.round(((Math.PI * Math.pow(0.875, 2) * mm_used) / 1000) * density);
-                    
-                    console.log(`📉 Deducting ${gramsUsed}g from ${activeSpool.brand}`);
-                    
-                    activeSpool.weight = Math.max(0, activeSpool.weight - gramsUsed);
-                    
-                    // Save the new weight to database
-                    await saveAndRender();
-                    
-                    // Reset Klipper variable back to 0 so we don't double-charge
-                    console.log("🔄 Resetting Klipper variable to 0...");
-                    await fetch('/printer/gcode/script', { 
-                        method: 'POST', 
-                        headers: {'Content-Type':'application/json'}, 
-                        body: JSON.stringify({script: "SAVE_VARIABLE VARIABLE=pending_filament_mm VALUE=0"}) 
-                    });
-                    
-                    alert(`✅ Print Complete! Auto-deducted ${gramsUsed}g.`);
+                    if (mm_used > 0) {
+                        const explicitSlot = Number(vars.pending_filament_slot || vars.pending_filament_inventory_slot || 0);
+                        let activeSpool = null;
+                        let fallbackLabel = 'first loaded Snapmaker U1 spool';
+
+                        if (explicitSlot >= 1 && explicitSlot <= 4) {
+                            const locationName = `Snapmaker U1 - Slot ${explicitSlot}`;
+                            activeSpool = spools.find(s => String(s.location || '').trim() === locationName);
+                            fallbackLabel = locationName;
+                        }
+
+                        if (!activeSpool) {
+                            activeSpool = spools.find(s => s.location && s.location.trim().toLowerCase().startsWith('snapmaker u1'));
+                        }
+
+                        if (!activeSpool) {
+                            console.warn("⚠️ Filament used, but no spool assigned to a 'Snapmaker U1 - Slot #' location in inventory!");
+                            return;
+                        }
+
+                        const density = materialDensities[activeSpool.material] || 1.24;
+                        const gramsUsed = filamentMmToGrams(mm_used, density);
+
+                        activeSpool.weight = Math.max(0, Number(activeSpool.weight || 0) - gramsUsed);
+                        deductions.push(`${fallbackLabel}: -${gramsUsed}g from ${activeSpool.brand} ${activeSpool.color}`);
+                    }
                 }
-            } catch (e) { 
-                console.error("❌ Auto-deduction error:", e); 
+
+                if (deductions.length === 0) return;
+
+                await saveAndRender();
+
+                console.log("🔄 Resetting filament usage variables to 0...");
+                await fetch('/printer/gcode/script', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        script: [
+                            "SAVE_VARIABLE VARIABLE=pending_filament_slot1_mm VALUE=0",
+                            "SAVE_VARIABLE VARIABLE=pending_filament_slot2_mm VALUE=0",
+                            "SAVE_VARIABLE VARIABLE=pending_filament_slot3_mm VALUE=0",
+                            "SAVE_VARIABLE VARIABLE=pending_filament_slot4_mm VALUE=0",
+                            "SAVE_VARIABLE VARIABLE=pending_filament_mm VALUE=0",
+                            "SAVE_VARIABLE VARIABLE=pending_filament_slot VALUE=0"
+                        ].join("\n")
+                    })
+                });
+
+                alert(`✅ Filament usage deducted:\n\n${deductions.join('\n')}`);
+            } catch (e) {
+                console.error("❌ Auto-deduction error:", e);
             }
         }
 
-// --- SNAPMAKER U1 SLOT LOAD LISTENER ---
-// This does NOT read RFID UID. It detects when a U1 slot changes to loaded.
+        function filamentMmToGrams(mmUsed, density) {
+            // 1.75mm filament radius = 0.875mm. Convert mm³ to cm³, then multiply by density.
+            return Math.round(((Math.PI * Math.pow(0.875, 2) * Number(mmUsed)) / 1000) * density);
+        }
+
+// --- OPENRFID / SNAPMAKER U1 RFID LISTENER ---
+// Requires OpenRFID to write latest tag data to Moonraker DB:
+// /server/database/item?namespace=fluidd&key=u1_last_rfid_tag
+// Expected value shape:
+// { slot: 0-3, vendor, type, subtype, color, card_uid }
+
+async function checkRFIDQueue() {
+    try {
+        const response = await fetch('/server/database/item?namespace=fluidd&key=u1_last_rfid_tag');
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const tag = data.result?.value;
+        if (!tag || !tag.card_uid) return;
+
+        lastSeenOpenRFIDTag = tag;
+
+        const signature = getOpenRFIDSignature(tag);
+
+        // Do not repeatedly process the same last-read tag every polling cycle.
+        if (signature === lastProcessedCardUid) return;
+        lastProcessedCardUid = signature;
+
+        processOpenRFIDTag(tag, { showAlert: true });
+    } catch (e) {
+        console.error("RFID database polling error:", e);
+        setRFIDStatus('RFID polling error', e.message || String(e), false);
+    }
+}
+
+function getOpenRFIDSignature(tag) {
+    return [
+        tag.card_uid ?? '', tag.slot ?? '', tag.vendor ?? '', tag.manufacturer ?? '', tag.type ?? '', tag.subtype ?? '',
+        tag.color ?? '', tag.weight ?? '', tag.sku ?? '', tag.hotend_min ?? '', tag.hotend_max ?? '', tag.bed_temp ?? '',
+        tag.drying_temp ?? '', tag.drying_time ?? '', tag.diameter ?? '', tag.manufactured_on ?? ''
+    ].join('|');
+}
+
+function processLastRFIDAgain() {
+    if (!lastSeenOpenRFIDTag) {
+        alert('No RFID tag has been seen by the inventory page yet. Scan or attach a spool first.');
+        return;
+    }
+    lastProcessedCardUid = null;
+    processOpenRFIDTag(lastSeenOpenRFIDTag, { showAlert: true, force: true });
+}
+
+function processOpenRFIDTag(tag, options = {}) {
+    const uid = normalizeUid(tag.card_uid);
+    const slotNumber = normalizeOpenRFIDSlot(tag.slot);
+    const locationName = `Snapmaker U1 - Slot ${slotNumber}`;
+    const extracted = extractOpenRFIDInventoryFields(tag, locationName, uid);
+
+    const existingSpool = spools.find(s =>
+        normalizeUid(s.id) === uid ||
+        normalizeUid(s.rfidUid || '') === uid
+    );
+
+    // Clear any other spool that currently claims this slot.
+    spools.forEach(s => {
+        if (s.location === locationName && normalizeUid(s.id) !== uid && normalizeUid(s.rfidUid || '') !== uid) {
+            s.location = "Storage Shelf 1";
+        }
+    });
+
+    if (existingSpool) {
+        mergeOpenRFIDIntoExistingSpool(existingSpool, extracted, tag);
+        saveAndRender();
+        setRFIDStatus(
+            `RFID matched: ${existingSpool.brand || extracted.brand} ${existingSpool.color || extracted.color}`,
+            `${uid} assigned to ${locationName}. ${formatRFIDSummary(extracted)}`,
+            true
+        );
+        if (options.showAlert) {
+            alert(`✅ RFID matched existing spool. Assigned ${existingSpool.brand || extracted.brand} ${existingSpool.color || extracted.color} to ${locationName}.`);
+        }
+        return;
+    }
+
+    // Unknown tag: prefill the Add Spool form and use the card UID as the inventory ID.
+    pendingNfcUid = uid;
+    pendingOpenRFIDTag = tag;
+
+    document.getElementById('brand').value = extracted.brand;
+    document.getElementById('vendor').value = extracted.vendor;
+    document.getElementById('rfidUid').value = extracted.uid;
+    document.getElementById('material').value = extracted.material;
+    document.getElementById('color').value = extracted.colorName;
+    document.getElementById('colorHex').value = extracted.colorHex;
+    document.getElementById('location').value = locationName;
+    document.getElementById('capacity').value = String(extracted.maxWeight);
+    document.getElementById('weight').value = String(extracted.weight);
+    document.getElementById('sku').value = extracted.sku;
+    document.getElementById('diameter').value = extracted.diameter;
+    document.getElementById('hotendMin').value = extracted.hotendMin;
+    document.getElementById('hotendMax').value = extracted.hotendMax;
+    document.getElementById('bedTemp').value = extracted.bedTemp;
+    document.getElementById('firstLayerTemp').value = extracted.firstLayerTemp;
+    document.getElementById('otherLayerTemp').value = extracted.otherLayerTemp;
+    document.getElementById('dryingTemp').value = extracted.dryingTemp;
+    document.getElementById('dryingTime').value = extracted.dryingTime;
+    document.getElementById('manufacturedOn').value = extracted.manufacturedOn;
+    document.getElementById('notes').value = extracted.notes;
+
+    switchView('add');
+    document.getElementById('brand').placeholder = `[RFID: ${uid} Linked] e.g. Hatchbox`;
+    document.getElementById('brand').focus();
+
+    setRFIDStatus(
+        `New RFID spool detected in ${locationName}`,
+        `${uid}. ${formatRFIDSummary(extracted)}`,
+        true
+    );
+
+    if (options.showAlert) {
+        alert(`⚠️ New RFID spool detected in ${locationName}. OpenRFID details were pulled into the Add Spool form. Review and save it to inventory.`);
+    }
+}
+
+function mergeOpenRFIDIntoExistingSpool(spool, extracted, rawTag) {
+    spool.location = extracted.location;
+    spool.rfidUid = extracted.uid;
+    spool.openRfid = rawTag;
+
+    // Fill missing or generic fields, but do not overwrite your manual labels unless they are blank.
+    if (!spool.brand) spool.brand = extracted.brand;
+    if (!spool.vendor) spool.vendor = extracted.vendor;
+    if (!spool.material) spool.material = extracted.material;
+    if (!spool.color || String(spool.color).startsWith('#')) spool.color = extracted.colorName;
+    if (!spool.colorName) spool.colorName = extracted.colorName;
+    if (!spool.colorHex) spool.colorHex = extracted.colorHex;
+    if (!spool.subtype) spool.subtype = extracted.subtype;
+    if (!spool.sku) spool.sku = extracted.sku;
+    if (!spool.diameter) spool.diameter = extracted.diameter;
+    if (!spool.hotendMin) spool.hotendMin = extracted.hotendMin;
+    if (!spool.hotendMax) spool.hotendMax = extracted.hotendMax;
+    if (!spool.bedTemp) spool.bedTemp = extracted.bedTemp;
+    if (!spool.firstLayerTemp) spool.firstLayerTemp = extracted.firstLayerTemp;
+    if (!spool.otherLayerTemp) spool.otherLayerTemp = extracted.otherLayerTemp;
+    if (!spool.dryingTemp) spool.dryingTemp = extracted.dryingTemp;
+    if (!spool.dryingTime) spool.dryingTime = extracted.dryingTime;
+    if (!spool.manufacturedOn) spool.manufacturedOn = extracted.manufacturedOn;
+
+    if ((!spool.maxWeight || spool.maxWeight === 1000) && extracted.maxWeight) {
+        spool.maxWeight = extracted.maxWeight;
+    }
+    if ((!spool.weight || spool.weight === 1000) && extracted.weight) {
+        spool.weight = extracted.weight;
+    }
+
+    // Append RFID profile notes one time, preserving your existing notes.
+    if (extracted.notes) {
+        const existingNotes = spool.notes || '';
+        const marker = `RFID UID: ${extracted.uid}`;
+        if (!existingNotes.includes(marker)) {
+            spool.notes = existingNotes ? `${existingNotes} | ${extracted.notes}` : extracted.notes;
+        }
+    }
+}
+
+function extractOpenRFIDInventoryFields(tag, locationName, uid) {
+    const brand = firstNonEmpty(tag.manufacturer, tag.brand, tag.vendor, 'Unknown');
+    const vendor = firstNonEmpty(tag.vendor, '');
+    const material = mapOpenRFIDMaterial(tag.type, tag.subtype);
+    const colorHex = normalizeOpenRFIDColor(tag.color || tag.rgb || '');
+    const colorName = friendlyColorName(colorHex) || firstNonEmpty(tag.color_name, tag.colorName, 'Unknown');
+    const weight = normalizeWeight(tag.weight || tag.weight_grams || tag.spool_weight, 1000);
+
+    return {
+        uid,
+        brand,
+        vendor,
+        material,
+        color: colorName,
+        colorName,
+        colorHex,
+        location: locationName,
+        weight,
+        maxWeight: weight,
+        subtype: firstNonEmpty(tag.subtype, tag.modifier, ''),
+        sku: firstNonEmpty(tag.sku, tag.SKU, ''),
+        diameter: firstNonEmpty(tag.diameter, tag.diameter_mm, ''),
+        hotendMin: firstNonEmpty(tag.hotend_min, tag.hotendMin, tag.hotend_min_temp, tag.nozzle_min, ''),
+        hotendMax: firstNonEmpty(tag.hotend_max, tag.hotendMax, tag.hotend_max_temp, tag.nozzle_max, ''),
+        bedTemp: firstNonEmpty(tag.bed_temp, tag.bedTemp, ''),
+        firstLayerTemp: firstNonEmpty(tag.first_layer_temp, tag.firstLayerTemp, ''),
+        otherLayerTemp: firstNonEmpty(tag.other_layer_temp, tag.otherLayerTemp, ''),
+        dryingTemp: firstNonEmpty(tag.drying_temp, tag.dryingTemp, ''),
+        dryingTime: firstNonEmpty(tag.drying_time, tag.dryingTime, ''),
+        manufacturedOn: firstNonEmpty(tag.manufactured_on, tag.manufactured, tag.date, ''),
+        notes: buildOpenRFIDNotes(tag, uid)
+    };
+}
+
+function buildOpenRFIDNotes(tag, uid) {
+    const parts = [`RFID UID: ${uid}`];
+
+    const subtype = firstNonEmpty(tag.subtype, tag.modifier, '');
+    if (subtype) parts.push(`Subtype: ${subtype}`);
+
+    const sku = firstNonEmpty(tag.sku, tag.SKU, '');
+    if (sku) parts.push(`SKU: ${sku}`);
+
+    const diameter = firstNonEmpty(tag.diameter, tag.diameter_mm, '');
+    if (diameter) parts.push(`Diameter: ${diameter}mm`);
+
+    const hotendMin = firstNonEmpty(tag.hotend_min, tag.hotendMin, tag.hotend_min_temp, tag.nozzle_min, '');
+    const hotendMax = firstNonEmpty(tag.hotend_max, tag.hotendMax, tag.hotend_max_temp, tag.nozzle_max, '');
+    if (hotendMin || hotendMax) parts.push(`Hotend: ${hotendMin || '?'}-${hotendMax || '?'}°C`);
+
+    const bedTemp = firstNonEmpty(tag.bed_temp, tag.bedTemp, '');
+    if (bedTemp) parts.push(`Bed: ${bedTemp}°C`);
+
+    const dryingTemp = firstNonEmpty(tag.drying_temp, tag.dryingTemp, '');
+    const dryingTime = firstNonEmpty(tag.drying_time, tag.dryingTime, '');
+    if (dryingTemp || dryingTime) parts.push(`Drying: ${dryingTemp || '?'}°C for ${dryingTime || '?'}h`);
+
+    const manufacturedOn = firstNonEmpty(tag.manufactured_on, tag.manufactured, tag.date, '');
+    if (manufacturedOn) parts.push(`Made: ${manufacturedOn}`);
+
+    return parts.join(' | ');
+}
+
+function formatRFIDSummary(extracted) {
+    const bits = [];
+    if (extracted.brand) bits.push(extracted.brand);
+    if (extracted.material) bits.push(extracted.material);
+    if (extracted.subtype) bits.push(extracted.subtype);
+    if (extracted.color) bits.push(extracted.color);
+    if (extracted.weight) bits.push(`${extracted.weight}g`);
+    return bits.join(' / ');
+}
+
+function setRFIDStatus(title, detail, ok = true) {
+    const card = document.getElementById('rfidStatus');
+    const main = document.getElementById('rfidStatusMain');
+    const meta = document.getElementById('rfidStatusMeta');
+    if (!card || !main || !meta) return;
+
+    card.classList.add('visible');
+    card.style.borderLeftColor = ok ? '#10b981' : '#ef4444';
+    main.innerHTML = `<strong>${escapeHtml(title)}</strong>`;
+    meta.textContent = detail || '';
+}
+
+function firstNonEmpty(...values) {
+    for (const value of values) {
+        if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+    }
+    return '';
+}
+
+function normalizeUid(uid) {
+    return String(uid || '').replace(/:/g, '').trim().toUpperCase();
+}
+
+function normalizeWeight(value, fallback = 1000) {
+    const n = parseInt(value, 10);
+    if (Number.isFinite(n) && n > 0) return n;
+    return fallback;
+}
+
+function normalizeOpenRFIDSlot(slot) {
+    const n = Number(slot);
+    // OpenRFID U1 config is zero-based: 0,1,2,3. Inventory is one-based: 1,2,3,4.
+    if (!Number.isFinite(n)) return 1;
+    if (n >= 0 && n <= 3) return n + 1;
+    if (n >= 1 && n <= 4) return n;
+    return 1;
+}
+
+function normalizeOpenRFIDColor(color) {
+    if (!color) return '';
+    let c = String(color).trim().replace(/^0x/i, '').replace('#', '').toUpperCase();
+    // ARGB from OpenRFID/Snapmaker, for example FFF4C032. Drop alpha.
+    if (/^[0-9A-F]{8}$/.test(c)) c = c.slice(2);
+    if (/^[0-9A-F]{6}$/.test(c)) return `#${c}`;
+    return String(color).trim();
+}
+
+
+function hexToRgb(hex) {
+    const normalized = normalizeOpenRFIDColor(hex);
+    const match = /^#?([0-9A-F]{6})$/i.exec(normalized);
+    if (!match) return null;
+    const value = match[1];
+    return {
+        r: parseInt(value.slice(0, 2), 16),
+        g: parseInt(value.slice(2, 4), 16),
+        b: parseInt(value.slice(4, 6), 16)
+    };
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h *= 60;
+    }
+    return { h, s, l };
+}
+
+function friendlyColorName(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return '';
+    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+    if (l < 0.12) return 'Black';
+    if (l > 0.92 && s < 0.18) return 'White';
+    if (s < 0.12) return l < 0.55 ? 'Gray' : 'Light Gray';
+
+    if (h < 10 || h >= 345) return 'Red';
+    if (h < 25) return 'Red-Orange';
+    if (h < 36) return 'Orange';
+    if (h < 66) return 'Yellow';
+    if (h < 85) return 'Yellow-Green';
+    if (h < 165) return 'Green';
+    if (h < 190) return 'Teal';
+    if (h < 250) return 'Blue';
+    if (h < 285) return 'Purple';
+    if (h < 330) return 'Pink';
+    return 'Red';
+}
+
+function buildSettingsLine(spool) {
+    const tag = spool.openRfid || {};
+    const bits = [];
+    const hotendMin = firstNonEmpty(spool.hotendMin, tag.hotend_min, '');
+    const hotendMax = firstNonEmpty(spool.hotendMax, tag.hotend_max, '');
+    const bedTemp = firstNonEmpty(spool.bedTemp, tag.bed_temp, '');
+    const firstLayerTemp = firstNonEmpty(spool.firstLayerTemp, tag.first_layer_temp, '');
+    const otherLayerTemp = firstNonEmpty(spool.otherLayerTemp, tag.other_layer_temp, '');
+    const dryingTemp = firstNonEmpty(spool.dryingTemp, tag.drying_temp, '');
+    const dryingTime = firstNonEmpty(spool.dryingTime, tag.drying_time, '');
+
+    if (hotendMin || hotendMax) bits.push(`Hotend ${hotendMin || '?'}-${hotendMax || '?'}°C`);
+    if (bedTemp) bits.push(`Bed ${bedTemp}°C`);
+    if (firstLayerTemp) bits.push(`First ${firstLayerTemp}°C`);
+    if (otherLayerTemp) bits.push(`Other ${otherLayerTemp}°C`);
+    if (dryingTemp || dryingTime) bits.push(`Dry ${dryingTemp || '?'}°C/${dryingTime || '?'}h`);
+    return bits.join(' • ');
+}
+
+function mapOpenRFIDMaterial(type, subtype) {
+    const raw = `${type || ''} ${subtype || ''}`.toLowerCase();
+
+    if (raw.includes('petg-cf') || raw.includes('petg cf')) return 'PETG-CF';
+    if (raw.includes('petg')) return 'PETG';
+    if (raw.includes('pla-cf') || raw.includes('pla cf')) return 'PLA-CF';
+    if (raw.includes('silk')) return 'PLA Silk';
+    if (raw.includes('pla')) return 'PLA';
+    if (raw.includes('abs')) return 'ABS';
+    if (raw.includes('asa')) return 'ASA';
+    if (raw.includes('tpu')) return 'TPU';
+    if (raw.includes('pc')) return 'PC';
+    if (raw.includes('pa-cf') || raw.includes('nylon cf')) return 'PA-CF';
+    if (raw.includes('pa') || raw.includes('nylon')) return 'Nylon (PA)';
+    if (raw.includes('wood')) return 'Wood';
+    if (raw.includes('pva')) return 'PVA';
+    if (raw.includes('hips')) return 'HIPS';
+
+    return 'PLA';
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// --- SNAPMAKER U1 SLOT LOAD LISTENER FALLBACK ---
+// This does NOT read RFID UID. Leave disabled unless OpenRFID is not working.
 
 let lastSlotStates = {
     1: null,
@@ -752,13 +1431,11 @@ async function checkU1SlotChanges() {
             const wasLoaded = lastSlotStates[slot];
             const isLoaded = slotStates[slot];
 
-            // First run: initialize only, do not pop up.
             if (wasLoaded === null) {
                 lastSlotStates[slot] = isLoaded;
                 continue;
             }
 
-            // Detect newly loaded filament.
             if (wasLoaded === false && isLoaded === true) {
                 handleSlotLoaded(slot);
             }
@@ -798,7 +1475,6 @@ function handleSlotLoaded(slot) {
         return;
     }
 
-    // Optional: clear any other spool already assigned to this slot
     spools.forEach(s => {
         if (s.location === locationName) {
             s.location = "Storage Shelf 1";
@@ -811,7 +1487,10 @@ function handleSlotLoaded(slot) {
     alert(`Assigned ${spools[selectedIndex].brand} ${spools[selectedIndex].color} to ${locationName}.`);
 }
 
-// Check every 3 seconds
+// Check OpenRFID/Moonraker DB every 3 seconds.
+setInterval(checkRFIDQueue, 3000);
+
+// Optional fallback if you want slot-detection without RFID:
 // setInterval(checkU1SlotChanges, 3000);
 
     setInterval(checkPrinterUsage, 10000);
