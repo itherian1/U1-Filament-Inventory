@@ -1,0 +1,36 @@
+#!/bin/sh
+
+SCRIPT="/oem/printer_data/config/filament_inventory/inventory_deduction_daemon.py"
+LOG="/oem/printer_data/logs/inventory_deduction_daemon.log"
+PID="/run/inventory_deduction_daemon.pid"
+
+case "$1" in
+  start)
+    echo "Starting Snapmaker U1 inventory deduction daemon"
+    mkdir -p /oem/printer_data/logs
+    start-stop-daemon -S -b -m -p "$PID" -x /usr/bin/python3 -- "$SCRIPT" >> "$LOG" 2>&1
+    ;;
+  stop)
+    echo "Stopping Snapmaker U1 inventory deduction daemon"
+    start-stop-daemon -K -p "$PID"
+    rm -f "$PID"
+    ;;
+  restart)
+    "$0" stop
+    sleep 1
+    "$0" start
+    ;;
+  status)
+    if [ -f "$PID" ]; then
+      echo "Running with PID $(cat "$PID")"
+    else
+      echo "Not running"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
