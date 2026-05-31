@@ -289,7 +289,7 @@ Add a location block inside the active nginx `server { ... }` block:
 
 ```nginx
 location /filament_inventory/ {
-    alias /home/lava/printer_data/config/filament_inventory/;
+    alias /oem/printer_data/config/filament_inventory/;
     index index.html;
     try_files $uri $uri/ /filament_inventory/index.html;
 }
